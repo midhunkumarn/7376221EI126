@@ -1,35 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import axios from "axios";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [users, setUsers] = useState([]);
+  const [error, setError] = useState(null);
+
+  const accessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiZXhwIjoxNzQyNDQ5MjM3LCJpYXQiOjE3NDI0NDg5MzcsImlzcyI6IkFmZm9yZG1lZCIsImp0aSI6IjZhMjU4OTVmLWEwZjctNDA3Mi05ZDViLWI2YjdkOTExNGM4MCIsInN1YiI6Im1pZGh1bmt1bWFyLmVpMjJAYml0c2F0aHkuYWMuaW4ifSwiY29tcGFueU5hbWUiOiJnb01hcnQiLCJjbGllbnRJRCI6IjZhMjU4OTVmLWEwZjctNDA3Mi05ZDViLWI2YjdkOTExNGM4MCIsImNsaWVudFNlY3JldCI6Illxck1zWGFMdEt0TE1OUGsiLCJvd25lck5hbWUiOiJNaWRodW5rdW1hciIsIm93bmVyRW1haWwiOiJtaWRodW5rdW1hci5laTIyQGJpdHNhdGh5LmFjLmluIiwicm9sbE5vIjoiNzM3NjIyMUVJMTI2In0._ONCdXDT045lTBAEa5uW1wB5QXwjIqY0AoHQYmWp6Yo";
+  const API_URL = "http://20.244.56.144/test/users";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(API_URL, {
+          headers: {
+            Authorization: `Bearer ${accessToken.trim()}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.data && response.data.users) {
+          setUsers(Object.values(response.data.users));
+        } else {
+          throw new Error("Invalid API response");
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || "Error fetching data");
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="container">
+      <h1>User List</h1>
+      {error && <p className="error">{error}</p>}
+
+      <div className="user-grid">
+        {users.length > 0 ? (
+          users.map((user, index) => (
+            <div key={index} className="user-card">
+              <h2>{user}</h2>
+            </div>
+          ))
+        ) : (
+          <p>Loading users...</p>
+        )}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
